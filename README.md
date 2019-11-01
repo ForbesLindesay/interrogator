@@ -1,5 +1,7 @@
 # interrogator
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ForbesLindesay/interrogator.svg)](https://greenkeeper.io/)
+
 A collection of common interactive command line user interfaces
 
 ## Installation
