@@ -1,5 +1,5 @@
 {
-  "name": "@forbeslindesay/interrogator",
+  "name": "interrogator",
   "description": "A collection of common interactive command line user interfaces",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
