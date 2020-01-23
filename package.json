@@ -22,7 +22,7 @@
   "devDependencies": {
     "@forbeslindesay/tsconfig": "^2.0.0",
     "@types/jest": "^24.0.18",
-    "husky": "^3.0.8",
+    "husky": "^4.2.1",
     "jest": "^24.9.0",
     "lint-staged": "^9.4.2",
     "lsr": "^2.0.0",
