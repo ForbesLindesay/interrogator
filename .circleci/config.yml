@@ -16,31 +16,31 @@ workflows:
     jobs:
       - unit-tests:
           <<: *not_master
-          name: node-8
-          version: '8'
+          name: node-14
+          version: '14'
       - unit-tests:
           <<: *not_master
-          name: node-10
-          version: '10'
+          name: node-16
+          version: '16'
       - unit-tests:
           <<: *not_master
-          name: node-12
-          version: '12'
+          name: node-18
+          version: '18'
 
   release:
     jobs:
       - unit-tests:
           <<: *only_master
-          name: node-8
-          version: '8'
+          name: node-14
+          version: '14'
       - unit-tests:
           <<: *only_master
-          name: node-10
-          version: '10'
+          name: node-16
+          version: '16'
       - unit-tests:
           <<: *only_master
-          name: node-12
-          version: '12'
+          name: node-18
+          version: '18'
 
       - publish-dry-run:
           <<: *only_master
@@ -56,9 +56,9 @@ workflows:
           <<: *only_master
           context: common-env
           requires:
-            - node-8
-            - node-10
-            - node-12
+            - node-14
+            - node-16
+            - node-18
             - publish-approval
 
 jobs:
@@ -67,7 +67,7 @@ jobs:
       version:
         type: string
     docker:
-      - image: circleci/node:<< parameters.version >>
+      - image: node:<< parameters.version >>
     steps:
       - setup
       - build
@@ -75,7 +75,7 @@ jobs:
 
   publish-dry-run:
     docker:
-      - image: circleci/node:12
+      - image: node:18
     steps:
       - setup
       - build
@@ -83,7 +83,7 @@ jobs:
 
   publish:
     docker:
-      - image: circleci/node:12
+      - image: node:18
     steps:
       - setup
       - build
@@ -116,8 +116,11 @@ commands:
   publish-dry-run:
     steps:
       - run:
-          name: Release (Dry Run)
-          command: npx semantic-release --dry-run
+          name: NPM Auth
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: Release (Canary)
+          command: npx rollingversions publish --canary $CIRCLE_BUILD_NUM
 
   publish:
     steps:
@@ -126,4 +129,4 @@ commands:
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       - run:
           name: Release
-          command: npx semantic-release
+          command: npx rollingversions publish
