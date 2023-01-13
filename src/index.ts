@@ -1,10 +1,34 @@
-import {prompt, Separator} from 'inquirer';
+let inquirerCache: Promise<typeof import('inquirer').default> | undefined;
+async function inquirer() {
+  return await (inquirerCache ||
+    (inquirerCache = import('inquirer').then((i) => i.default)));
+}
+// end inquirer import
 
-export {Separator};
-type SeparatorInstance = typeof Separator extends (new () => infer Instance)
-  ? Instance
-  : never;
-export type Separator = SeparatorInstance;
+async function typedPrompt<T>(
+  question: import('inquirer').DistinctQuestion<{value: T}> & {name: 'value'},
+) {
+  const {prompt} = await inquirer();
+  return (await prompt(question)).value;
+}
+
+async function replaceSeparators<T>(
+  choices: readonly T[],
+): Promise<(T extends Separator ? import('inquirer').default.Separator : T)[]> {
+  const i = await inquirer();
+  return choices.map((c): any =>
+    c instanceof Separator ? new i.Separator(c.line) : c,
+  );
+}
+
+export class Separator {
+  readonly type: 'separator';
+  readonly line: string | undefined;
+  constructor(line?: string) {
+    this.type = 'separator';
+    this.line = line;
+  }
+}
 
 export type ExpandChoiceObject<T> =
   | {
@@ -13,7 +37,7 @@ export type ExpandChoiceObject<T> =
       readonly name: string;
       readonly short?: string;
     }
-  | SeparatorInstance;
+  | Separator;
 export type CheckboxChoiceObject<T> =
   | {
       readonly value: T;
@@ -21,15 +45,11 @@ export type CheckboxChoiceObject<T> =
       readonly name: string;
       readonly short?: string;
     }
-  | SeparatorInstance;
+  | Separator;
 export type ChoiceObject<T> =
   | {readonly value: T; readonly name: string; readonly short?: string}
-  | SeparatorInstance;
+  | Separator;
 export type Choice<T> = ChoiceObject<T> | Extract<T, string>;
-
-function getValue(p: any): any {
-  return p.value;
-}
 
 function getDefaultValue(choices: readonly any[], defaultValue: any) {
   if (defaultValue === undefined) return undefined;
@@ -54,17 +74,13 @@ export async function list<T>(
   choices: ReadonlyArray<Choice<T>>,
   defaultValue?: T,
 ): Promise<T> {
-  return getValue(
-    await prompt([
-      {
-        type: 'list',
-        name: 'value',
-        message,
-        choices,
-        default: getDefaultValue(choices, defaultValue),
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'list',
+    name: 'value',
+    message,
+    choices: await replaceSeparators(choices),
+    default: getDefaultValue(choices, defaultValue),
+  });
 }
 
 export async function rawList<T extends string>(
@@ -82,17 +98,13 @@ export async function rawList<T>(
   choices: ReadonlyArray<Choice<T>>,
   defaultValue?: T,
 ): Promise<T> {
-  return getValue(
-    await prompt([
-      {
-        type: 'rawlist',
-        name: 'value',
-        message,
-        choices,
-        default: getDefaultValue(choices, defaultValue),
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'rawlist',
+    name: 'value',
+    message,
+    choices: await replaceSeparators(choices),
+    default: getDefaultValue(choices, defaultValue),
+  });
 }
 
 export async function expand<T>(
@@ -100,49 +112,37 @@ export async function expand<T>(
   choices: ReadonlyArray<ExpandChoiceObject<T>>,
   defaultValue?: T,
 ): Promise<T> {
-  return getValue(
-    await prompt([
-      {
-        type: 'expand',
-        name: 'value',
-        message,
-        choices,
-        default: getDefaultValue(choices, defaultValue),
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'expand',
+    name: 'value',
+    message,
+    choices: await replaceSeparators(choices),
+    default: getDefaultValue(choices, defaultValue),
+  });
 }
 
 export async function checkboxes<T>(
   message: string,
   choices: ReadonlyArray<CheckboxChoiceObject<T>>,
 ): Promise<T[]> {
-  return getValue(
-    await prompt([
-      {
-        type: 'checkbox',
-        name: 'value',
-        message,
-        choices,
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'checkbox',
+    name: 'value',
+    message,
+    choices: await replaceSeparators(choices),
+  });
 }
 
 export async function confirm(
   message: string,
   defaultValue: boolean = true,
 ): Promise<boolean> {
-  return getValue(
-    await prompt([
-      {
-        type: 'confirm',
-        name: 'value',
-        message,
-        default: defaultValue,
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'confirm',
+    name: 'value',
+    message,
+    default: defaultValue,
+  });
 }
 
 export async function input(
@@ -150,17 +150,13 @@ export async function input(
   defaultValue?: string,
   validate?: (value: string) => true | string,
 ): Promise<string> {
-  return getValue(
-    await prompt([
-      {
-        type: 'input',
-        name: 'value',
-        message,
-        default: defaultValue,
-        validate,
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'input',
+    name: 'value',
+    message,
+    default: defaultValue,
+    validate,
+  });
 }
 
 export async function password(
@@ -168,31 +164,23 @@ export async function password(
   defaultValue?: string,
   validate?: (value: string) => true | string,
 ): Promise<string> {
-  return getValue(
-    await prompt([
-      {
-        type: 'password',
-        name: 'value',
-        message,
-        default: defaultValue,
-        validate,
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'password',
+    name: 'value',
+    message,
+    default: defaultValue,
+    validate,
+  });
 }
 
 export async function editor(
   message: string,
   defaultValue: string = '',
 ): Promise<string> {
-  return getValue(
-    await prompt([
-      {
-        type: 'editor',
-        name: 'value',
-        message,
-        default: defaultValue,
-      },
-    ]),
-  );
+  return await typedPrompt({
+    type: 'editor',
+    name: 'value',
+    message,
+    default: defaultValue,
+  });
 }

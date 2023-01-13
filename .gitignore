@@ -88,3 +88,4 @@ __generated__/
 .idea
 
 buildinfo.json
+/tests/
