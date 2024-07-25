@@ -9,7 +9,13 @@ async function typedPrompt<T>(
   question: import('inquirer').DistinctQuestion<{value: T}> & {name: 'value'},
 ) {
   const {prompt} = await inquirer();
-  return (await prompt(question)).value;
+  return (
+    await prompt(
+      Object.fromEntries(
+        Object.entries(question).filter(([, value]) => value !== undefined),
+      ),
+    )
+  ).value;
 }
 
 async function replaceSeparators<T>(

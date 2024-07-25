@@ -10,6 +10,20 @@ function expectType<T>(value: T) {
   return value;
 }
 async function run() {
+  console.info('# Input');
+  console.info('This should be an input with a default value of "hello".');
+  const inputTest = await prompt.input('Enter "world"', 'hello');
+  expectType<string>(inputTest);
+  assert.equal(inputTest, 'world');
+  console.info('This should be an input with validation.');
+  const inputValidationTest = await prompt.input(
+    'Enter "hello world"',
+    '',
+    (value) => value === 'hello world' || "Enter 'hello world'",
+  );
+  expectType<string>(inputValidationTest);
+  assert.equal(inputValidationTest, 'hello world');
+
   console.info('# List');
 
   console.info(
