@@ -16,31 +16,31 @@ workflows:
     jobs:
       - unit-tests:
           <<: *not_master
-          name: node-14
-          version: '14'
-      - unit-tests:
-          <<: *not_master
-          name: node-16
-          version: '16'
-      - unit-tests:
-          <<: *not_master
           name: node-18
           version: '18'
+      - unit-tests:
+          <<: *not_master
+          name: node-20
+          version: '20'
+      - unit-tests:
+          <<: *not_master
+          name: node-22
+          version: '22'
 
   release:
     jobs:
       - unit-tests:
           <<: *only_master
-          name: node-14
-          version: '14'
-      - unit-tests:
-          <<: *only_master
-          name: node-16
-          version: '16'
-      - unit-tests:
-          <<: *only_master
           name: node-18
           version: '18'
+      - unit-tests:
+          <<: *not_master
+          name: node-20
+          version: '20'
+      - unit-tests:
+          <<: *not_master
+          name: node-22
+          version: '22'
 
       - publish-dry-run:
           <<: *only_master
@@ -56,9 +56,9 @@ workflows:
           <<: *only_master
           context: common-env
           requires:
-            - node-14
-            - node-16
             - node-18
+            - node-20
+            - node-22
             - publish-approval
 
 jobs:
