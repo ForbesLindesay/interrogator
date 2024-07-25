@@ -34,11 +34,11 @@ workflows:
           name: node-18
           version: '18'
       - unit-tests:
-          <<: *not_master
+          <<: *only_master
           name: node-20
           version: '20'
       - unit-tests:
-          <<: *not_master
+          <<: *only_master
           name: node-22
           version: '22'
 
